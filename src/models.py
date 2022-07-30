@@ -1,6 +1,6 @@
 import os
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
@@ -8,97 +8,67 @@ from eralchemy import render_er
 
 Base = declarative_base()
 
-class Instagram(Base):
-    __tablename__ = 'insta_database'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
-    id = Column(Integer, primary_key=True)
-    users_id = Column(Integer, ForeignKey('users.id'))
+association_table = Table(
+    "association",
+    Base.metadata,
+    Column("user_id", ForeignKey("user.id")),
+    Column("follow_id", ForeignKey("follow.id")),
+)
 
-class Users(Base):
-    __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    users_email = Column(String(250), nullable=False)
-    users_password = Column(String(100), nullable=False)
-    login_status = Column(String(250), nullable=False)
-    users_name = Column(String(100), nullable=False)
-    users_full_name = Column(String(250), nullable=False)
-    
 
 class User(Base):
-    __tablename__ = 'user'
+    __tablename__ = "user"
     id = Column(Integer, primary_key=True)
-    users_id = Column(Integer, ForeignKey('users.id'))
-    following_id = Column(Integer, ForeignKey('following.id'))
-    followers_id = Column(Integer, ForeignKey('followers.id'))
+    user_email = Column(String(250), nullable=False)
+    user_password = Column(String(100), nullable=False)
+    login_status = Column(String(250), nullable=False)
+    user_name = Column(String(100), nullable=False)
+    user_full_name = Column(String(250), nullable=False)
     block_id = Column(Integer, ForeignKey('block.id'))
-    feed_id = Column(Integer, ForeignKey('feed.id'))
     likes_id = Column(Integer, ForeignKey('likes.id'))
-
-class Posts(Base):
-    __tablename__ = 'posts'
-    id = Column(Integer, primary_key=True)
-    post_id = Column(Integer, ForeignKey('post.id'))
+    follow = relationship("Follow", secondary=association_table)
 
 
-class Feed(Base):
-    __tablename__ = 'feed'
+class Follow(Base):
+    __tablename__ = "follow"
     id = Column(Integer, primary_key=True)
-    
-    posts_id = Column(Integer, ForeignKey('posts.id'))
-    
-class Followers(Base):
-    __tablename__ = 'followers'
-    id = Column(Integer, primary_key=True)
-    
-class Following(Base):
-    __tablename__ = 'following'
-    id = Column(Integer, primary_key=True)
-    
-   
-class Block(Base):
-    __tablename__ = 'block'
-    id = Column(Integer, primary_key=True)
-    users_id = Column(Integer, ForeignKey('users.id'))
-    
+
+
 class Post(Base):
     __tablename__ = 'post'
     id = Column(Integer, primary_key=True)
-    post_content = Column(String(1000), nullable=False)
+    user_id = Column(Integer, ForeignKey('user.id'))
     comment_id = Column(Integer, ForeignKey('comment.id'))
     hashtag_id = Column(Integer, ForeignKey('hashtag.id'))
     likes_id = Column(Integer, ForeignKey('likes.id'))
     
+    
+class Block(Base):
+    __tablename__ = 'block'
+    id = Column(Integer, primary_key=True)
+   
 
 class Comment(Base):
     __tablename__ = 'comment'
     id = Column(Integer, primary_key=True)
+    comment = Column(String(1000), nullable=False)
     likes_id = Column(Integer, ForeignKey('likes.id'))
+
 
 class Likes(Base):
     __tablename__ = 'likes'
     id = Column(Integer, primary_key=True)
-    
-    
+    comment_id = Column(Integer, ForeignKey('comment.id'))
+    user_id = Column(Integer, ForeignKey('user.id'))
+    post_id = Column(Integer, ForeignKey('post.id'))
 
-class PostLocation(Base):
-    __tablename__ = 'post_location'
-    id = Column(Integer, primary_key=True)
-    posts_id = Column(Integer, ForeignKey('posts.id'))
     
-
 class Hashtag(Base):
     __tablename__ = 'hashtag'
     id = Column(Integer, primary_key=True)
     hashtag = Column(String(1000), nullable=False)
+
    
-
-
-
-    
-
-
-
     def to_dict(self):
         return {}
 
